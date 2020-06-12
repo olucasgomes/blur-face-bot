@@ -48,8 +48,6 @@ blur(image)
 head, tail = ntpath.split(args["image"])
 name = tail or ntpath.basename(head)
 
-print(name)
-
 cv2.imwrite(os.path.abspath('./processed_files/{0}'.format(name)), image)
 
 print("image wrote")

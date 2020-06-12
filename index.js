@@ -60,10 +60,18 @@ bot.on('message', async ctx => {
       const filePath = resolvePath(`./files/${fileName}`)
       response.data.pipe(fs.createWriteStream(filePath))
         .on('finish', () => {
-          const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
-          pythonProcess.stdout.on("data", data =>{
-            ctx.replyWithPhoto({ source: resolvePath(`./processed_files/${fileName}`) })
-          })
+          console.log({ fileType })
+          if (fileType === 'jpg') {
+            const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
+            pythonProcess.stdout.on("data", data =>{
+              ctx.replyWithPhoto({ source: resolvePath(`./processed_files/${fileName}`) })
+            })
+          } else if (fileType === 'mp4') {
+            const pythonProcess = spawn('python3', ["src/blur_image/blur_image_video.py", "--image", filePath]);
+            pythonProcess.stdout.on("data", data =>{
+              ctx.replyWithVideo({ source: resolvePath(`./processed_files/${fileName}`) })
+            })
+          }
         })
         .on('error', e => console.log('An error has occured'))
     } catch (err) {
