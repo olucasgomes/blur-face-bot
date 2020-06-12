@@ -1,0 +1,5 @@
+node_modules/
+.vscode/
+files/
+processed_files/
+.DS_STORE
