@@ -59,20 +59,20 @@ bot.on('message', async ctx => {
     try {
       const response = await axios({ url, responseType: 'stream' })
       const fileName = `${ctx.update.message.from.id}_${new Date().toISOString()}.${fileType}`
-      const filePath = resolvePath(`./files/${fileName}`)
+      const filePath = resolvePath(`/files/${fileName}`)
       response.data.pipe(fs.createWriteStream(filePath))
         .on('finish', () => {
           if (fileType === 'jpg') {
             const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
             pythonProcess.stdout.on("data", data =>{
               ctx.reply('Sending processed image...')
-              ctx.replyWithPhoto({ source: resolvePath(`./processed_files/${fileName}`) })
+              ctx.replyWithPhoto({ source: resolvePath(`/processed_files/${fileName}`) })
             })
           } else if (fileType === 'mp4') {
             const pythonProcess = spawn('python3', ["src/blur_image/blur_image_video.py", "--image", filePath]);
             pythonProcess.stdout.on("data", data =>{
               ctx.reply('Sending processed video...')
-              ctx.replyWithVideo({ source: resolvePath(`./processed_files/${fileName}`) })
+              ctx.replyWithVideo({ source: resolvePath(`/processed_files/${fileName}`) })
             })
           }
         })
