@@ -24,7 +24,7 @@ bot.command('help', (ctx) => {
 *Help*!
 Need help? No problem.
 
-You can send me photos and videos files and I'll fuck them up for you.
+You can send me photos and videos files and I'll blur all faces for you.
 `)
 })
 
@@ -60,7 +60,6 @@ bot.on('message', async ctx => {
       const filePath = resolvePath(`./files/${fileName}`)
       response.data.pipe(fs.createWriteStream(filePath))
         .on('finish', () => {
-          console.log({ fileType })
           if (fileType === 'jpg') {
             const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
             pythonProcess.stdout.on("data", data =>{
