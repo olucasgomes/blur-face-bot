@@ -76,7 +76,7 @@ bot.on('message', async ctx => {
             })
           }
         })
-        .on('error', e => console.error('An error has occured: [%o]', err))
+        .on('error', err => console.error('An error has occured: [%o]', err))
     } catch (err) {
       console.error('Error getting file from telegram: [%o]', err)
     }
