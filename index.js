@@ -51,9 +51,9 @@ bot.on('message', async ctx => {
     let url
     try {
       url = await ctx.telegram.getFileLink(fileId)
-      ctx.reply('File received succesfully and is being processed!')
+      ctx.reply('File received successfully and is being processed!')
     } catch (err) {
-      console.error('error getting file id from telegram: [%o]', err)
+      console.error('Error getting file id from telegram: [%o]', err)
     }
   
     try {
@@ -76,9 +76,9 @@ bot.on('message', async ctx => {
             })
           }
         })
-        .on('error', e => console.log('An error has occured'))
+        .on('error', e => console.error('An error has occured: [%o]', err))
     } catch (err) {
-      console.error('error getting file from telegram: [%o]', err)
+      console.error('Error getting file from telegram: [%o]', err)
     }
   }
 });
