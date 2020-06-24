@@ -3,3 +3,4 @@ node_modules/
 files/
 processed_files/
 .DS_STORE
+.env
