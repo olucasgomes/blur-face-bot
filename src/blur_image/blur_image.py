@@ -24,10 +24,13 @@ def blur_face_simple(image, factor=3.0):
 
 	return cv2.GaussianBlur(image, (k_w, k_h), 0)
 
-def blur (image, confidence = 0.5, blocks = 20):
+def blur (image, confidence = 0.2, blocks = 20):
 	blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), (104.0, 177.0, 123.0))
+
 	net.setInput(blob)
+
 	detections = net.forward()
+
 	for i in range(0, detections.shape[2]):
 		confidence_detected = detections[0, 0, i, 2]
 

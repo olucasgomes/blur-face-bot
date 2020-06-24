@@ -60,7 +60,7 @@ frame_height = int(cap.get(4))
 
 out = cv2.VideoWriter(
   os.path.abspath('./processed_files/{0}'.format(name)),
-  cv2.VideoWriter_fourcc('m', 'p', '4', 'v'),
+  cv2.VideoWriter_fourcc('a', 'v', 'c', '1'),
   10,
   (frame_width,frame_height)
 )

@@ -5,7 +5,7 @@ const { spawn } = require('child_process')
 const { Telegraf } = require('telegraf')
 const axios = require('axios')
 
-const { TELEGRAM_BOT_TOKEN, PORT, URL } = require('./src/config/env')
+const { TELEGRAM_BOT_TOKEN, PORT, URL, NODE_ENV } = require('./src/config/env')
 
 const resolvePath = (file) => path.resolve(__dirname, file)
 
@@ -68,11 +68,18 @@ bot.on('message', async ctx => {
               ctx.reply('Sending processed image...')
               ctx.replyWithPhoto({ source: resolvePath(`processed_files/${fileName}`) })
             })
+            pythonProcess.on("error", err => {
+              console.log({ err })
+            })
           } else if (fileType === 'mp4') {
             const pythonProcess = spawn('python3', ["src/blur_image/blur_image_video.py", "--image", filePath]);
-            pythonProcess.stdout.on("data", data =>{
+            pythonProcess.stdout.on("data", data => {
+              console.log({ path: resolvePath(`processed_files/${fileName}`) })
               ctx.reply('Sending processed video...')
               ctx.replyWithVideo({ source: resolvePath(`processed_files/${fileName}`) })
+            })
+            pythonProcess.on("error", err => {
+              console.log({ err })
             })
           }
         })
@@ -81,6 +88,11 @@ bot.on('message', async ctx => {
       console.error('Error getting file from telegram: [%o]', err)
     }
   }
+  return
 });
 
-bot.startWebhook(`/bot${TELEGRAM_BOT_TOKEN}`, null, PORT)
+if (NODE_ENV === 'development') {
+  bot.launch()
+} else {
+  bot.startWebhook(`/bot${TELEGRAM_BOT_TOKEN}`, null, PORT)
+}
