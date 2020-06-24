@@ -10,7 +10,10 @@ const { TELEGRAM_BOT_TOKEN, PORT, URL, NODE_ENV } = require('./src/config/env')
 const resolvePath = (file) => path.resolve(__dirname, file)
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN)
-bot.telegram.setWebhook(`${URL}/bot${TELEGRAM_BOT_TOKEN}`)
+
+if (NODE_ENV === 'production') {
+  bot.telegram.setWebhook(`${URL}/bot${TELEGRAM_BOT_TOKEN}`)
+}
 
 bot.command(['start', 'about'], (ctx) => {
   return ctx.replyWithMarkdown(`
@@ -57,33 +60,60 @@ bot.on('message', async ctx => {
     }
   
     try {
-      const response = await axios({ url, responseType: 'stream' })
+      const response = await axios({ url, responseType: 'arraybuffer' })
       const fileName = `${ctx.update.message.from.id}_${new Date().toISOString()}.${fileType}`
       const filePath = resolvePath(`files/${fileName}`)
-      response.data.pipe(fs.createWriteStream(filePath))
-        .on('finish', () => {
-          if (fileType === 'jpg') {
-            const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
-            pythonProcess.stdout.on("data", data =>{
-              ctx.reply('Sending processed image...')
-              ctx.replyWithPhoto({ source: resolvePath(`processed_files/${fileName}`) })
-            })
-            pythonProcess.on("error", err => {
-              console.log({ err })
-            })
-          } else if (fileType === 'mp4') {
-            const pythonProcess = spawn('python3', ["src/blur_image/blur_image_video.py", "--image", filePath]);
-            pythonProcess.stdout.on("data", data => {
-              console.log({ path: resolvePath(`processed_files/${fileName}`) })
-              ctx.reply('Sending processed video...')
-              ctx.replyWithVideo({ source: resolvePath(`processed_files/${fileName}`) })
-            })
-            pythonProcess.on("error", err => {
-              console.log({ err })
-            })
-          }
-        })
-        .on('error', err => console.error('An error has occured: [%o]', err))
+      fs.writeFile(filePath, response.data, (err, data) => {
+        console.log({ err, data })
+        if (err) {
+          return console.error('An error has occured: [%o]', err)
+        }
+
+        if (fileType === 'jpg') {
+          const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
+          pythonProcess.stdout.on("data", data =>{
+            ctx.reply('Sending processed image...')
+            ctx.replyWithPhoto({ source: resolvePath(`processed_files/${fileName}`) })
+          })
+          pythonProcess.on("error", err => {
+            console.log({ err })
+          })
+        } else if (fileType === 'mp4') {
+          const pythonProcess = spawn('python3', ["src/blur_image/blur_image_video.py", "--image", filePath]);
+          pythonProcess.stdout.on("data", data => {
+            console.log({ path: resolvePath(`processed_files/${fileName}`) })
+            ctx.reply('Sending processed video...')
+            ctx.replyWithVideo({ source: resolvePath(`processed_files/${fileName}`) })
+          })
+          pythonProcess.on("error", err => {
+            console.log({ err })
+          })
+        }
+      })
+      // response.data.pipe(fs.createWriteStream(filePath))
+      //   .on('finish', () => {
+          // if (fileType === 'jpg') {
+          //   const pythonProcess = spawn('python3', ["src/blur_image/blur_image.py", "--image", filePath]);
+          //   pythonProcess.stdout.on("data", data =>{
+          //     ctx.reply('Sending processed image...')
+          //     ctx.replyWithPhoto({ source: resolvePath(`processed_files/${fileName}`) })
+          //   })
+          //   pythonProcess.on("error", err => {
+          //     console.log({ err })
+          //   })
+          // } else if (fileType === 'mp4') {
+          //   const pythonProcess = spawn('python3', ["src/blur_image/blur_image_video.py", "--image", filePath]);
+          //   pythonProcess.stdout.on("data", data => {
+          //     console.log({ path: resolvePath(`processed_files/${fileName}`) })
+          //     ctx.reply('Sending processed video...')
+          //     ctx.replyWithVideo({ source: resolvePath(`processed_files/${fileName}`) })
+          //   })
+          //   pythonProcess.on("error", err => {
+          //     console.log({ err })
+          //   })
+      //     }
+      //   })
+      //   .on('error', err => console.error('An error has occured: [%o]', err))
     } catch (err) {
       console.error('Error getting file from telegram: [%o]', err)
     }
